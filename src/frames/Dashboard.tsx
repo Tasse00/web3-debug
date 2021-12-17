@@ -4,6 +4,7 @@ import React from 'react';
 import { history } from 'umi';
 import ContractDebug from './ContractDebug';
 import ERC721Debug from './ERC721Debug';
+import DetectContract from './DetectContract';
 
 const Dashboard: React.FC<{}> = (props) => {
   const { createFrame } = useFrameGroup();
@@ -41,6 +42,22 @@ const Dashboard: React.FC<{}> = (props) => {
           }}
         >
           Contract Debug
+        </Card>
+      </Col> <Col>
+        <Card
+          hoverable
+          onClick={() => {
+            createFrame(
+              {
+                title: 'View Block',
+                component: <DetectContract />,
+                closable: true,
+              },
+              true,
+            );
+          }}
+        >
+          Detect Contract
         </Card>
       </Col>
     </Row>

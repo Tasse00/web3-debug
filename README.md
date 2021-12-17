@@ -6,7 +6,8 @@
 - Logs
 - General Notification
 - Contract Interface Detect
-
+- [x] FrameGroup -> reducer
+- [ ] Block View
 ---
 
 

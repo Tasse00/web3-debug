@@ -66,7 +66,18 @@ export function useContractCall<T, P extends any[] = any>({
   );
 }
 
-
 export function useContractDebug() {
   return React.useContext(ContractDebugContext);
+}
+
+export function useAddressCode(address: string) {
+  const { getWeb3 } = useWeb3State();
+  return useRequest(
+    async () => {
+      return await getWeb3().eth.getCode(address);
+    },
+    {
+      refreshDeps: [getWeb3, address],
+    },
+  );
 }

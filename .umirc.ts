@@ -6,10 +6,6 @@ export default defineConfig({
   },
   routes: [
     {
-      path: 'test',
-      component: '@/pages/test',
-    },
-    {
       path: './',
       component: '@/providers/Web3ConnectProvider',
       routes: [
