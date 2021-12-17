@@ -32,14 +32,13 @@ const ERC721Info: React.FC = () => {
   });
 
   // 不是CurrFrame 而是 ThisFrame
-  const { setTitle, title } = useFrame();
+  const { setTitle } = useFrame();
 
   React.useEffect(() => {
-    if (symbol && symbol!==title) {
-      // frames 改变，setTitle也改变，需要使用reducer来处理
+    if (symbol) {
       setTitle(symbol);
     }
-  }, [symbol, setTitle, title]);
+  }, [symbol, setTitle]);
 
   return (
     <Row gutter={16}>

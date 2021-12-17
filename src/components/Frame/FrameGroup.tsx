@@ -6,68 +6,44 @@ import FrameTabs from './FrameTabs';
 const FrameGroup: React.FC<{
   initialFrames?: FrameConfig[];
 }> = ({ initialFrames = [] }) => {
-  const [currFrameId, setCurrFrameId] = React.useState(
-    initialFrames.length > 0 ? initialFrames[0].id : '',
-  );
-  const [frames, setFrames] = React.useState<FrameConfig[]>(initialFrames);
+  const [{ frames, currFrameId }, dispatch] = React.useReducer(reducer, {
+    frames: initialFrames,
+    currFrameId: initialFrames.length > 0 ? initialFrames[0].id : '',
+  });
 
-  const switchFrame = React.useCallback((id: string) => {
-    setCurrFrameId(id);
-  }, []);
+  const switchFrame = React.useCallback(
+    (id: string) => dispatch({ type: 'SWITCH_FRAME', payload: { id } }),
+    [dispatch],
+  );
+
   const createFrame = React.useCallback(
     (
-      frameConfig: {
+      config: {
         id?: string;
         title: string;
         component: React.ReactElement;
         closable?: boolean;
       },
       autoSwith?: boolean,
-    ) => {
-      const id = frameConfig.id || generateFrameId();
-      setFrames([...frames, { ...frameConfig, id }]);
-      if (!!autoSwith) {
-        setCurrFrameId(id);
-      }
-    },
-    [frames],
+    ) => dispatch({ type: 'CREATE_FRAME', payload: { config, autoSwith } }),
+    [dispatch],
   );
-  const closeFrame = React.useCallback(
-    (id: string) => {
-      const idx = frames.findIndex((f) => f.id === id);
 
-      if (idx > -1) {
-        if (currFrameId === frames[idx].id) {
-          if (idx < frames.length - 1) {
-            switchFrame(frames[idx + 1].id);
-          } else if (idx > 0) {
-            switchFrame(frames[idx - 1].id);
-          } else {
-            switchFrame('');
-          }
-        }
-        frames.splice(idx, 1);
-        setFrames([...frames]);
-      }
-    },
-    [frames, currFrameId],
+  const closeFrame = React.useCallback(
+    (id: string) => dispatch({ type: 'CLOSE_FRAME', payload: { id } }),
+    [dispatch],
   );
+
   const setFrameTitle = React.useCallback(
-    (id: string, title: string) => {
-      const idx = frames.findIndex((f) => f.id === id);
-      if (idx > -1) {
-        frames[idx].title = title;
-        setFrames([...frames]);
-      }
-    },
-    [frames],
+    (id: string, title: string) =>
+      dispatch({ type: 'SET_FRAME_TITLE', payload: { id, title } }),
+    [dispatch],
   );
-  // TODO: 为了保留各Frame状态,所有frame都渲染. 但是只显示当前Frame.
-  // ----: 通过width来控制?
 
   const currFrame = React.useMemo(() => {
     return frames.find((f) => f.id === currFrameId) || null;
   }, [frames, currFrameId]);
+
   return (
     <FrameGroupContext.Provider
       value={{
@@ -89,7 +65,6 @@ const FrameGroup: React.FC<{
                 key={frame.id}
                 style={{
                   width: currFrameId === frame.id ? '100%' : 0,
-                  // transition: 'all 0.3s',
                   overflow: 'hidden',
                 }}
               >
@@ -103,16 +78,17 @@ const FrameGroup: React.FC<{
   );
 };
 
-// 1. create tab
-// 2. tab provider
-// 3. components can use tab provider change any thing
-
 interface FrameGroupContextValue {
   // 切换当前的Frame
   switchFrame: (id: string) => void;
   // 创建Frame
   createFrame: (
-    frameConfig: { id?: string; title: string; component: React.ReactElement, closable?: boolean },
+    frameConfig: {
+      id?: string;
+      title: string;
+      component: React.ReactElement;
+      closable?: boolean;
+    },
     autoSwith?: boolean,
   ) => void;
   // 关闭Frame
@@ -140,6 +116,105 @@ export interface FrameConfig {
 
 function generateFrameId(): string {
   return Math.random().toString();
+}
+
+interface State {
+  frames: FrameConfig[];
+  currFrameId: string;
+}
+
+interface ActCreateFrame {
+  type: 'CREATE_FRAME';
+  payload: {
+    config: {
+      id?: string;
+      title: string;
+      component: React.ReactElement;
+      closable?: boolean;
+    };
+    autoSwith?: boolean;
+  };
+}
+interface ActCloseFrame {
+  type: 'CLOSE_FRAME';
+  payload: {
+    id: string;
+  };
+}
+
+interface ActSetFrameTitle {
+  type: 'SET_FRAME_TITLE';
+  payload: {
+    id: string;
+    title: string;
+  };
+}
+
+interface ActSwitchFrame {
+  type: 'SWITCH_FRAME';
+  payload: {
+    id: string;
+  };
+}
+
+type Action =
+  | ActCreateFrame
+  | ActCloseFrame
+  | ActSetFrameTitle
+  | ActSwitchFrame;
+
+function reducer(state: State, action: Action): State {
+  const { frames, currFrameId } = state;
+  switch (action.type) {
+    case 'CLOSE_FRAME': {
+      const idx = frames.findIndex((f) => f.id === action.payload.id);
+
+      if (idx > -1) {
+        if (currFrameId === frames[idx].id) {
+          if (idx < frames.length - 1) {
+            state.currFrameId = frames[idx + 1].id;
+          } else if (idx > 0) {
+            state.currFrameId = frames[idx - 1].id;
+          } else {
+            state.currFrameId = '';
+          }
+        }
+        frames.splice(idx, 1);
+      }
+      return {
+        ...state,
+        frames: [...frames],
+      };
+    }
+    case 'CREATE_FRAME': {
+      const id = action.payload.config.id || generateFrameId();
+      return {
+        ...state,
+        frames: [...frames, { ...action.payload.config, id }],
+        currFrameId: action.payload.autoSwith ? id : state.currFrameId,
+      };
+    }
+    case 'SET_FRAME_TITLE': {
+      const idx = frames.findIndex((f) => f.id === action.payload.id);
+      if (idx > -1) {
+        frames[idx] = {
+          ...frames[idx],
+          title: action.payload.title,
+        };
+        return {
+          ...state,
+          frames: [...frames],
+        };
+      }
+      return state;
+    }
+    case 'SWITCH_FRAME': {
+      return {
+        ...state,
+        currFrameId: action.payload.id,
+      };
+    }
+  }
 }
 
 export default FrameGroup;
