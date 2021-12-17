@@ -50,7 +50,7 @@ const DirectConnect: React.FC<{}> = (props) => {
     if (uniquePks.length > 0) {
       web3.eth.defaultAccount = web3.eth.accounts.wallet[0].address;
     }
-    setup(web3, 'metamask');
+    setup(web3, 'web3');
 
     storage.setUrls(unique([url, ...storedUrls]));
     storage.setPrivateKeys(uniquePks);

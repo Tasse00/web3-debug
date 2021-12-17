@@ -6,7 +6,7 @@ import {
   useContractDebug,
 } from '@/hooks/web3';
 import { Row, Col, Statistic, Card } from 'antd';
-import { useFrameGroup } from '@/hooks/frames';
+import { useFrame } from '@/hooks/frames';
 
 const ERC721Info: React.FC = () => {
   const { address, abi } = useContractDebug();
@@ -31,12 +31,15 @@ const ERC721Info: React.FC = () => {
     args: [account],
   });
 
-  const { currFrame, setFrameTitle } = useFrameGroup();
+  // 不是CurrFrame 而是 ThisFrame
+  const { setTitle, title } = useFrame();
+
   React.useEffect(() => {
-    if (currFrame && symbol) {
-      setFrameTitle(currFrame.id, symbol);
+    if (symbol && symbol!==title) {
+      // frames 改变，setTitle也改变，需要使用reducer来处理
+      setTitle(symbol);
     }
-  }, [symbol, currFrame]);
+  }, [symbol, setTitle, title]);
 
   return (
     <Row gutter={16}>

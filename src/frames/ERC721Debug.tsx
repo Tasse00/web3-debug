@@ -9,14 +9,14 @@ import ContractDebugProvider from '@/providers/ContractDebugProvider';
 import MethodList from '@/components/ContractDebug/MethodList';
 import QueryGroup from '@/components/ContractDebug/QueryGroup';
 import ERC721Info from '@/components/ContractDebug/ERC721/ERC721Info';
+import { useCachedState } from '@/hooks/cache';
 const _STORE_ERC721_ADDRESS = '_store_erc721_address';
 
 const ERC721Debug: React.FC<{}> = (props) => {
   const [address, setAddress] = React.useState('');
   const [addressLocked, setAddressLocked] = React.useState(false);
-  const [cachedAddresses, setCachedAddresses] = React.useState(() =>
-    storage.get<string[]>(_STORE_ERC721_ADDRESS, []),
-  );
+
+  const [cachedAddresses, setCachedAddresses] = useCachedState<string[]>(_STORE_ERC721_ADDRESS,[],);
 
   const options = cachedAddresses
     .filter((c) => c.includes(address))
@@ -86,7 +86,6 @@ const ERC721Debug: React.FC<{}> = (props) => {
             <TopSideContent
               style={{ width: '100%', height: '100%' }}
               top={<ERC721Info />}
-              side={false}
               content={<QueryGroup />}
             />
           )

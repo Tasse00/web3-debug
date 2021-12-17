@@ -5,9 +5,13 @@ import { List, Row, Col, Typography, Tag } from 'antd';
 const MethodList: React.FC<{}> = (props) => {
   const { abi, createQuery } = useContractDebug();
 
+  const methodAbi = React.useMemo(
+    () => abi.filter((item) => item.type === 'function'),
+    [],
+  );
   return (
     <List
-      dataSource={abi.filter((a) => a.type === 'function')}
+      dataSource={methodAbi.filter((a) => a.type === 'function')}
       renderItem={(abi) => (
         <List.Item
           style={{ width: 200, cursor: 'pointer' }}

@@ -89,7 +89,7 @@ const Web3ConnectProvider: React.FC<Props> = (props) => {
           }
         : undefined,
   };
-  // console.log(value);
+
   return (
     <Web3ConnectContext.Provider value={value}>
       {props.children}

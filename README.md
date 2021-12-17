@@ -1,28 +1,14 @@
-``` tsx
 
-// ContractDebugProvider
-// - contract
-// - querys
-
-// ERC721
-<ContractDebugProvider address={"0x...."} abi={[...]}>
-  <TopSideContent
-    top={
-      <ERC721Info />
-    }
-    side={
-      <MethodList />
-    }
-    content={
-      <QeuryPanel />
-    }
-  >
-</ContractDebugProvider>
-
-```
-
+## TODO
+- metamask
+- send
+- send with value
+- Logs
+- General Notification
+- Contract Interface Detect
 
 ---
+
 
 # umi project
 

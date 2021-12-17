@@ -1,5 +1,6 @@
 import React from 'react';
 import TopSideContent from '../Layouts/TopSideContent';
+import Frame from './Frame';
 import FrameTabs from './FrameTabs';
 
 const FrameGroup: React.FC<{
@@ -15,7 +16,12 @@ const FrameGroup: React.FC<{
   }, []);
   const createFrame = React.useCallback(
     (
-      frameConfig: { id?: string; title: string; component: React.ReactElement; },
+      frameConfig: {
+        id?: string;
+        title: string;
+        component: React.ReactElement;
+        closable?: boolean;
+      },
       autoSwith?: boolean,
     ) => {
       const id = frameConfig.id || generateFrameId();
@@ -29,21 +35,22 @@ const FrameGroup: React.FC<{
   const closeFrame = React.useCallback(
     (id: string) => {
       const idx = frames.findIndex((f) => f.id === id);
+
       if (idx > -1) {
         if (currFrameId === frames[idx].id) {
-          if (idx > 0) {
-            setCurrFrameId(frames[idx - 1].id);
-          } else if (idx < frames.length - 1) {
-            setCurrFrameId(frames[idx + 1].id);
+          if (idx < frames.length - 1) {
+            switchFrame(frames[idx + 1].id);
+          } else if (idx > 0) {
+            switchFrame(frames[idx - 1].id);
           } else {
-            setCurrFrameId('');
+            switchFrame('');
           }
         }
         frames.splice(idx, 1);
         setFrames([...frames]);
       }
     },
-    [frames],
+    [frames, currFrameId],
   );
   const setFrameTitle = React.useCallback(
     (id: string, title: string) => {
@@ -61,7 +68,6 @@ const FrameGroup: React.FC<{
   const currFrame = React.useMemo(() => {
     return frames.find((f) => f.id === currFrameId) || null;
   }, [frames, currFrameId]);
-
   return (
     <FrameGroupContext.Provider
       value={{
@@ -83,11 +89,11 @@ const FrameGroup: React.FC<{
                 key={frame.id}
                 style={{
                   width: currFrameId === frame.id ? '100%' : 0,
-                  transition: 'all 0.3s',
+                  // transition: 'all 0.3s',
                   overflow: 'hidden',
                 }}
               >
-                {frame.component}
+                <Frame config={frame} />
               </div>
             ))}
           </div>
@@ -106,7 +112,7 @@ interface FrameGroupContextValue {
   switchFrame: (id: string) => void;
   // 创建Frame
   createFrame: (
-    frameConfig: { id?: string; title: string; component: React.ReactElement; },
+    frameConfig: { id?: string; title: string; component: React.ReactElement, closable?: boolean },
     autoSwith?: boolean,
   ) => void;
   // 关闭Frame
@@ -128,6 +134,7 @@ export const FrameGroupContext = React.createContext<FrameGroupContextValue>({
 export interface FrameConfig {
   id: string;
   title: string;
+  closable?: boolean;
   component: React.ReactElement;
 }
 

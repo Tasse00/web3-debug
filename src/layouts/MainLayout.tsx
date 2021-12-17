@@ -1,7 +1,7 @@
 import { useWeb3Control } from '@/hooks/web3';
 import React from 'react';
 import styles from '@/theme.less';
-import { Button, Card } from 'antd';
+import { Button, Card, Tag } from 'antd';
 import Connect from '@/components/Connect/Connect';
 import Wallet from '@/components/Wallet/Wallet';
 import { useHistory } from 'umi';
@@ -29,18 +29,19 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           <div className={styles.panel} style={{ width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div>
-                <Button.Group>
+                {/* Debug */}
+                {/* <Button.Group>
                   <Button
                     icon={<LeftOutlined />}
                     disabled={his.length <= 0}
                     onClick={his.goBack}
                   />
                   <Button icon={<RightOutlined />} onClick={his.goForward} />
-                </Button.Group>
+                </Button.Group> */}
               </div>
               <div>
-                <span>{providerType}</span>
-                <Button size="small" type="text" onClick={disconnect}>
+                <Tag>{providerType}</Tag>
+                <Button onClick={disconnect}>
                   Reset
                 </Button>
               </div>
