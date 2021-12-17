@@ -1,48 +1,22 @@
 import React from 'react';
-import {
-  Card,
-  Row,
-  AutoComplete,
-  Button,
-  Col,
-  List,
-  Typography,
-  Tag,
-} from 'antd';
+import { Card, Row, AutoComplete, Button, Col } from 'antd';
 import storage from '@/storage';
 import { isValidAddress } from '@/utils/web3';
 import { unique } from '@/utils/array';
 import ABI from '@/abis/ERC721Enumerable.json';
 import TopSideContent from '@/components/Layouts/TopSideContent';
-import Query, {
-  generateQueryOption,
-  QueryOption,
-} from '@/components/Query/Query';
-import { AbiItem } from 'web3-utils';
-import { useAccount } from '@/hooks/web3';
 import ContractDebugProvider from '@/providers/ContractDebugProvider';
 import MethodList from '@/components/ContractDebug/MethodList';
 import QueryGroup from '@/components/ContractDebug/QueryGroup';
 import ERC721Info from '@/components/ContractDebug/ERC721/ERC721Info';
 const _STORE_ERC721_ADDRESS = '_store_erc721_address';
 
-interface Props {}
-
-const ERC721: React.FC<Props> = (props) => {
-  // 设置合约地址
-  // 最近使用地址 (下拉列表)
-  // 方法列表(通过ABI映射)
-  // 最近访问记录
-
-  const account = useAccount();
-
+const ERC721Debug: React.FC<{}> = (props) => {
   const [address, setAddress] = React.useState('');
   const [addressLocked, setAddressLocked] = React.useState(false);
   const [cachedAddresses, setCachedAddresses] = React.useState(() =>
     storage.get<string[]>(_STORE_ERC721_ADDRESS, []),
   );
-
-  const [queryOptions, setQueryOptions] = React.useState<QueryOption[]>([]);
 
   const options = cachedAddresses
     .filter((c) => c.includes(address))
@@ -56,25 +30,6 @@ const ERC721: React.FC<Props> = (props) => {
 
   const unlockAddress = () => {
     setAddressLocked(false);
-  };
-
-  const createQuery = (abi: AbiItem) => {
-    setQueryOptions([
-      ...queryOptions,
-      {
-        id: generateQueryOption(),
-        from: account,
-        contractAddress: address,
-        abi,
-      },
-    ]);
-  };
-  const removeQuery = (id: string) => {
-    const idx = queryOptions.findIndex((q) => q.id === id);
-    if (idx >= 0) {
-      queryOptions.splice(idx, 1);
-    }
-    setQueryOptions([...queryOptions]);
   };
 
   return (
@@ -141,4 +96,4 @@ const ERC721: React.FC<Props> = (props) => {
   );
 };
 
-export default ERC721;
+export default ERC721Debug;

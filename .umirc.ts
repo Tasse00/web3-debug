@@ -13,15 +13,10 @@ export default defineConfig({
       path: './',
       component: '@/providers/Web3ConnectProvider',
       routes: [
-        
         {
           path: './',
           component: '@/layouts/MainLayout',
           routes: [
-            {
-              path: './erc721',
-              component: '@/pages/erc721',
-            },
             {
               path: './',
               component: '@/pages/index',
@@ -30,7 +25,6 @@ export default defineConfig({
         },
       ]
     }
-
   ],
   history: {
     type: 'hash',

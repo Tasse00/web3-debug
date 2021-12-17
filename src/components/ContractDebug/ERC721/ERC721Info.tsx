@@ -1,8 +1,14 @@
 import React from 'react';
-import { useContract, useContractCall, useAccount, useContractDebug } from '@/hooks/web3';
+import {
+  useContract,
+  useContractCall,
+  useAccount,
+  useContractDebug,
+} from '@/hooks/web3';
 import { Row, Col, Statistic, Card } from 'antd';
-const ERC721Info: React.FC = () => {
+import { useFrameGroup } from '@/hooks/frames';
 
+const ERC721Info: React.FC = () => {
   const { address, abi } = useContractDebug();
 
   const account = useAccount();
@@ -25,6 +31,12 @@ const ERC721Info: React.FC = () => {
     args: [account],
   });
 
+  const { currFrame, setFrameTitle } = useFrameGroup();
+  React.useEffect(() => {
+    if (currFrame && symbol) {
+      setFrameTitle(currFrame.id, symbol);
+    }
+  }, [symbol, currFrame]);
 
   return (
     <Row gutter={16}>
