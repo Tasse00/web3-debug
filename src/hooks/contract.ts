@@ -1,54 +1,10 @@
-import { useAddressCode, useWeb3State } from '@/hooks/web3';
 import React from 'react';
-import { Input, Tag } from 'antd';
+import { getAbiKey } from '@/utils/web3';
 import { AbiItem } from 'web3-utils';
+import { useWeb3State } from './web3';
 import { getPromiseWithAbort } from '@/utils/async';
-import ABIs from '@/abis';
-import { formatAbi, getAbiKey } from '@/utils/web3';
 
-const abi = [
-  // ...ABIs.ERC721Enumerable,
-  {
-    inputs: [],
-    name: 'purchase',
-    outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
-    payable: true,
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'p',
-        type: 'uint256',
-      },
-    ],
-    name: 'setPrice',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-];
-
-const AddressCode: React.FC<{
-  address: string;
-}> = ({ address }) => {
-  const state = useMethodDetect(abi as any, address);
-
-  return (
-    <>
-      {state.map((s) => (
-        <div key={getAbiKey(s.abi)} style={{ display: 'flex' }}>
-          <Tag>{s.status}</Tag>
-          <div>{formatAbi(s.abi)}</div>
-        </div>
-      ))}
-    </>
-  );
-};
-
-function useMethodDetect(abi: AbiItem[], address: string): CheckState[] {
+export function useAbiDetect(abi: AbiItem[], address: string): CheckState[] {
   const [state, dispatch] = React.useReducer(reducer, []);
   const { getContract } = useWeb3State();
   const cancells = React.useRef<((reason: any) => void)[]>([]);
@@ -70,7 +26,21 @@ function useMethodDetect(abi: AbiItem[], address: string): CheckState[] {
           try {
             const contract = getContract([item], address);
 
-            const result = await contract.methods[item.name || '']().call();
+            // const options: Record<string, string> = {};
+
+            const options = (item.inputs || []).map((ipt) => {
+              return {
+                uint256: '0',
+                address: '0x0000000000000000000000000000000000000001',
+                bytes: '0x00',
+                bytes4: '0x00',
+              }[ipt.type];
+            });
+            // console.log(options);
+
+            const result = await contract.methods[item.name || ''](
+              ...options,
+            ).call();
 
             dispatch({
               type: 'UPDATE_CHECK_STATE',
@@ -81,14 +51,14 @@ function useMethodDetect(abi: AbiItem[], address: string): CheckState[] {
             });
           } catch (err) {
             let errStr = (err as any).message as string;
-
             if (
               /Provided address 0x[0-9A-Fa-f]{40} is invalid, the capitalization checksum test failed, or it's an indirect IBAN address which can't be converted./.test(
                 errStr,
               ) ||
               /^Returned error: VM Exception while processing transaction: revert$/.test(
                 errStr,
-              )
+              ) ||
+              /^Returned error: execution reverted$/.test(errStr)
             ) {
               dispatch({
                 type: 'UPDATE_CHECK_STATE',
@@ -98,9 +68,13 @@ function useMethodDetect(abi: AbiItem[], address: string): CheckState[] {
                 },
               });
             } else if (
-              /Invalid number of parameters for "[a-zA-Z0-9]+". Got [0-9]+ expected [0-9]+!/.test(
+              // /Invalid number of parameters for "[a-zA-Z0-9]+". Got [0-9]+ expected [0-9]+!/.test(
+              //   errStr,
+              // ) ||
+              /^Returned error: VM Exception while processing transaction: revert .+$/.test(
                 errStr,
-              )
+              ) ||
+              /^Returned error: execution reverted: .+$/.test(errStr)
             ) {
               dispatch({
                 type: 'UPDATE_CHECK_STATE',
@@ -123,7 +97,7 @@ function useMethodDetect(abi: AbiItem[], address: string): CheckState[] {
   return state;
 }
 
-interface CheckState {
+export interface CheckState {
   status: 'checking' | 'existed' | 'not-existed' | 'failed';
   abi: AbiItem;
 }
@@ -140,10 +114,6 @@ interface ActUpdateCheckState {
     status: CheckState['status'];
   };
 }
-// interface ActStartChecking {
-//   type: 'START_CHECKING';
-//   payload: string[];
-// }
 
 type Action = ActResetAbi | ActUpdateCheckState;
 
@@ -167,18 +137,7 @@ function reducer(state: CheckState[], action: Action): CheckState[] {
       return [...state];
     }
 
-    // case 'START_CHECKING':
-    //   for (let method of action.payload) {
-    //     const idx = state.findIndex((cs) => cs.abi.name === method);
-    //     if (idx > -1) {
-    //       state[idx] = { ...state[idx], status: 'checking' };
-    //     }
-    //   }
-    //   return [...state];
-
     default:
       return state;
   }
 }
-
-export default AddressCode;
