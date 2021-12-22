@@ -31,7 +31,7 @@ export function useContract(abi: AbiItem[], address: string): Contract {
 
   return React.useMemo(
     () => new (getWeb3().eth.Contract)(abi, address),
-    [getWeb3],
+    [getWeb3, address, abi],
   );
 }
 

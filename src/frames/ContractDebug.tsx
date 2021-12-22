@@ -33,7 +33,7 @@ const ContractDebug: React.FC<{}> = (props) => {
   const [isOk, setIsOk] = React.useState(false);
   const [customAbi, setCustomAbi] = React.useState('[]');
 
-  const [abiType, setAbiType] = React.useState('ERC721');
+  const [abiType, setAbiType] = React.useState('IERC721');
 
   const [address, setAddress] = React.useState('');
   const [cachedAddresses, setCachedAddresses] = useCachedState<string[]>(
@@ -61,6 +61,7 @@ const ContractDebug: React.FC<{}> = (props) => {
         return [];
       }
     } else {
+      // @ts-ignore
       return ABIs[abiType];
     }
   }, [abiType, customAbi]);
