@@ -1,13 +1,13 @@
 
 ## TODO
 - metamask
-- send
-- send with value
-- Logs
-- General Notification
-- Contract Interface Detect
+- [ ] contract send
+- [ ] Global Logs
+- [x] Contract Interface Detect
 - [x] FrameGroup -> reducer
 - [ ] Block View
+- [x] Global Notebook
+  
 ---
 
 
