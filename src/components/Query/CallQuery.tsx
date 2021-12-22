@@ -1,4 +1,5 @@
-import { useContract, useContractCall } from '@/hooks/web3';
+import { useContract } from '@/hooks/web3';
+import useContractCall from '@/hooks/web3/useContractCall';
 import {
   CloseOutlined,
   CloudOutlined,
@@ -30,36 +31,48 @@ export function generateQueryOption(): string {
   return Math.random().toString();
 }
 
-const Query: React.FC<
+const CallQuery: React.FC<
   {
     style?: React.CSSProperties;
     onRemove?: () => void;
   } & QueryOption
 > = ({ abi, id, style, contractAddress, onRemove }) => {
-  const inputs = abi.inputs || [];
-  const outputs = abi.outputs || [];
+  const inputs = React.useMemo(() => abi.inputs || [], [abi]);
+  const outputs = React.useMemo(() => abi.outputs || [], [abi]);
 
-  const initialValue: Record<string, string> = {};
-  inputs.forEach((ipt) => {
-    initialValue[ipt.name] = '';
-  });
+  const initialValue = React.useMemo(() => {
+    const initialValue: Record<string, string> = {};
+    inputs.forEach((ipt) => {
+      initialValue[ipt.name] = '';
+    });
+    return initialValue;
+  }, [inputs]);
+
   const { getField, setField, values } = useDynamicFields(initialValue);
 
-  const contract = useContract([abi], contractAddress);
+  // const contract = useContract([abi], contractAddress);
 
-  const callArgs: any[] = [];
-  inputs.forEach((ipt) => {
-    callArgs.push(getField(ipt.name));
-  });
-  const { run, data, error, loading } = useContractCall<any>({
-    contract,
-    method: abi.name || '',
-    args: callArgs,
-    options: {
-      manual: true,
+  const callArgs = React.useMemo(() => {
+    const callArgs: any[] = [];
+    inputs.forEach((ipt) => {
+      callArgs.push(getField(ipt.name));
+    });
+    return callArgs;
+  }, [inputs]);
+
+  const {
+    run,
+    data,
+    error,
+    pending: loading,
+  } = useContractCall(
+    {
+      address: contractAddress,
+      abi,
+      options: callArgs,
     },
-    type: 'call',
-  });
+    { auto: false },
+  );
 
   return (
     <Card
@@ -163,4 +176,4 @@ function useDynamicFields(initialValue: Record<string, any>) {
   };
 }
 
-export default Query;
+export default CallQuery;
