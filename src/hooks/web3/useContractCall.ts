@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbiItem } from 'web3-utils';
 import useAsync, { UseAsyncOptions, UseAsyncResult } from '../useAsync';
-import { useContract } from '../web3';
+import { useAccount, useContract } from '../web3';
 
 export interface UseContractCallParams<P extends any[]> {
   address: string;
@@ -15,12 +15,14 @@ export default function useContractCall<P extends any[], R extends any[]>(
 ): UseAsyncResult<P, R> {
   const abiArr = React.useMemo(() => [abi], [abi]);
   const contract = useContract(abiArr, address);
-
+  const account = useAccount();
   const svc = React.useCallback(
-    async (...args: P) =>
-      await contract.methods[abi.name || ''](...args).call(),
-    [contract, abi],
+    async () =>
+      await contract.methods[abi.name || ''](...(options || [])).call({
+        from: account,
+      }),
+    [contract, abi, account, options],
   );
 
-  return useAsync(svc, { ...asyncOptions, autoParams: options });
+  return useAsync(svc, asyncOptions);
 }

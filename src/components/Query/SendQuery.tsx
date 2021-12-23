@@ -1,5 +1,11 @@
+import { useContract } from '@/hooks/web3';
 import useContractCall from '@/hooks/web3/useContractCall';
-import { CloseOutlined, DownOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  CloudOutlined,
+  DownOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 import {
   Space,
   Button,
@@ -12,10 +18,9 @@ import {
   Alert,
 } from 'antd';
 import React from 'react';
-import { useDynamicFields } from './hooks';
 import { QueryProps } from './Query';
 
-const CallQuery: React.FC<QueryProps> = ({
+const SendQuery: React.FC<QueryProps> = ({
   abi,
   id,
   style,
@@ -147,4 +152,16 @@ const CallQuery: React.FC<QueryProps> = ({
   );
 };
 
-export default CallQuery;
+function useDynamicFields(initialValue: Record<string, any>) {
+  const [store, setStore] = React.useState(initialValue);
+
+  return {
+    getField: (field: string) => store[field],
+    setField: (field: string, value: any) => {
+      setStore({ ...store, [field]: value });
+    },
+    values: store,
+  };
+}
+
+export default SendQuery;

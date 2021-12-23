@@ -1,10 +1,7 @@
 import React from 'react';
 import { getPromiseWithAbort } from '@/utils/async';
 
-
 type Service<P extends any[], R = any> = (...params: P) => Promise<R>;
-
-
 
 export interface UseAsyncOptions<P extends any[]> {
   auto?: boolean;
@@ -24,31 +21,26 @@ const EMPTY_PARAMS: string[] = [];
 
 export default function useAsync<P extends any[], R>(
   svc: Service<P, R>,
-  {
-    auto = true,
-    autoParams,
-  }: UseAsyncOptions<P>,
+  { auto = true, autoParams }: UseAsyncOptions<P>,
 ): UseAsyncResult<P, R> {
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<Error | undefined>(undefined);
   const [data, setData] = React.useState<R | undefined>(undefined);
-  
-  const cancelHook = React.useRef<(()=>void) | null>(null);
 
+  const cancelHook = React.useRef<(() => void) | null>(null);
 
   const run = React.useCallback(
     (...args: P) => {
-
       cancelHook.current?.();
 
       setPending(true);
       setData(undefined);
       setError(undefined);
 
-      const {abort, promise} = getPromiseWithAbort(svc(...args))
+      const { abort, promise } = getPromiseWithAbort(svc(...args));
 
-      cancelHook.current = ()=>abort("cancelled");
-      
+      cancelHook.current = () => abort('cancelled');
+
       promise
         .then((result) => {
           setData(result);
@@ -62,17 +54,16 @@ export default function useAsync<P extends any[], R>(
     [svc],
   );
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     if (auto) {
       if (autoParams === undefined) {
         // @ts-ignore
-        run()
-      }else{
+        run();
+      } else {
         run(...autoParams);
       }
-      
     }
-  }, [auto, run])
+  }, [auto, run]);
 
   return { pending, error, data, run, mutate: setData };
 }
